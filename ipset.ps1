@@ -1,5 +1,9 @@
 $interface = $(read-host -prompt "interface").tolower()
 
+$gateway = $(read-host -prompt "gateway")
+
+$mask = $(read-host -prompt "mask")
+
 $iota = $(netsh interface ipv4 show interfaces).tolower()
 
 $index = 3
@@ -29,9 +33,58 @@ $index = $interfaceIndex.substring(1,$interfaceIndex.length - 1).indexof(" ")
 
 $interfaceIndex = $interfaceIndex.substring(1,$index)
 
-$gatewayAlpha = @(10,0,0,1)
+$gatewayAlpha = @(0,0,0,0)
+
+$index = 0
+
+while ($index -lt $gatewayAlpha.length)
+{
+	$stringIndex = $gateway.indexof(".");
+	
+	if ($stringIndex -ge 0)
+	{
+		$gatewayAlpha[$index] = [int]$gateway.substring(0,$stringIndex);
+		
+		$stringIndex += 1;
+	}
+	else
+	{
+		$gatewayAlpha[$index] = [int]$gateway.substring(0,$gateway.length);
+		
+		$stringIndex = 0;
+	}
+	
+	$gateway = $gateway.substring($stringIndex,$gateway.length - $stringIndex);
+	
+	$index += 1;
+}
+
 
 $maskAlpha = @(255,255,255,0)
+
+$index = 0
+
+while ($index -lt $maskAlpha.length)
+{
+	$stringIndex = $mask.indexof(".");
+	
+	if ($stringIndex -ge 0)
+	{
+		$maskAlpha[$index] = [int]$mask.substring(0,$stringIndex);
+		
+		$stringIndex += 1;
+	}
+	else
+	{
+		$maskAlpha[$index] = [int]$mask.substring(0,$mask.length);
+		
+		$stringIndex = 0;
+	}
+	
+	$mask = $mask.substring($stringIndex,$mask.length - $stringIndex);
+	
+	$index += 1;
+}
 
 $ipAlpha = @(0,0,0,0)
 
