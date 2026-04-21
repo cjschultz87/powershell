@@ -128,8 +128,12 @@ set-netipaddress -interfaceindex $interfaceIndex -prefixlength $prefix
 
 netsh wlan connect name=$bssid
 
-$sierra = $(ipconfig | select-string `"ipv4`")
+$sierra = ""
 
+while ($sierra.length -lt 1)
+{
+	$sierra = $(ipconfig | select-string "ipv4")
+}
 $index = 1
 
 while ($index -lt $sierra.length)
