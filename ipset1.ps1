@@ -142,9 +142,9 @@ while ($index -lt $sierra.length)
 	
 	$sierra_index = $sierra_sub.indexof(":") + 2;
 	
-	$sierra_sub = $sierra_sub.substring($index,$sierra_sub.length - $index);
+	$sierra_sub = $sierra_sub.substring($sierra_index,$sierra_sub.length - $sierra_index);
 	
-	remove-netipaddress -ipaddress $sierra_sub;
+	remove-netipaddress -ipaddress $sierra_sub -confirm:$false;
 	
 	$index += 1;
 }
