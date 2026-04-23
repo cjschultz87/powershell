@@ -122,7 +122,7 @@ while ($index -lt $maskAlpha.length)
 
 $prefix -= 1
 
-new-netipaddress -interfaceindex $interfaceIndex -ipaddress $sierra -defaultgateway $gateway
+new-netipaddress -interfaceindex $interfaceIndex -ipaddress $sierra
 
 set-netipaddress -interfaceindex $interfaceIndex -prefixlength $prefix
 
