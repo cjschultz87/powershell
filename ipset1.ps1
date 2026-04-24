@@ -62,7 +62,7 @@ while ($index -lt $gatewayAlpha.length)
 }
 
 
-$maskAlpha = @(255,255,255,0)
+$maskAlpha = @(0,0,0,0)
 
 $index = 0
 
@@ -117,7 +117,7 @@ while ($index -lt $maskAlpha.length)
 {
 	$prefix_prime = [convert]::tostring($maskAlpha[$index],2);
 	
-	if ($prefix_prime.length -lt 0)
+	if ($prefix_prime.indexof("0") -lt 0)
 	{
 		$prefix += 8;
 	}
