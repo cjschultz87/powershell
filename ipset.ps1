@@ -60,7 +60,7 @@ while ($index -lt $gatewayAlpha.length)
 }
 
 
-$maskAlpha = @(255,255,255,0)
+$maskAlpha = @(0,0,0,0)
 
 $index = 0
 
