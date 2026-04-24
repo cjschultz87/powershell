@@ -115,12 +115,19 @@ $index = 0
 
 while ($index -lt $maskAlpha.length)
 {
-	$prefix += [convert]::tostring($maskAlpha[$index],2).length;
+	$prefix_prime = [convert]::tostring($maskAlpha[$index],2);
+	
+	if ($prefix_prime.length -lt 0)
+	{
+		$prefix += 8;
+	}
+	else
+	{
+		$prefix += $prefix_prime.indexof("0");
+	}
 	
 	$index += 1;
 }
-
-$prefix -= 1
 
 new-netipaddress -interfaceindex $interfaceIndex -ipaddress $sierra
 
