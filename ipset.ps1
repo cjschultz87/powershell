@@ -29,9 +29,21 @@ if ($index -eq $iota.length)
 
 $interfaceIndex = $iota[$index].tostring()
 
-$index = $interfaceIndex.substring(1,$interfaceIndex.length - 1).indexof(" ")
+$i_start = 0
 
-$interfaceIndex = $interfaceIndex.substring(1,$index)
+while ($i_start -lt $interfaceIndex.length)
+{
+	if ($interfaceIndex[$i_start] -ne " ")
+	{
+		break;
+	}
+	
+	$i_start += 1;
+}
+
+$index = $interfaceIndex.substring($i_start,$interfaceIndex.length - $i_start).indexof(" ")
+
+$interfaceIndex = $interfaceIndex.substring($i_start,$index)
 
 $gatewayAlpha = @(0,0,0,0)
 
