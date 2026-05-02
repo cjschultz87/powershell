@@ -143,6 +143,8 @@ while ($index -lt $maskAlpha.length)
 
 new-netipaddress -interfaceindex $interfaceIndex -ipaddress $sierra
 
+$sierra_prime = $sierra
+
 set-netipaddress -interfaceindex $interfaceIndex -prefixlength $prefix
 
 netsh wlan connect name=$bssid
@@ -163,7 +165,10 @@ while ($index -lt $sierra.length)
 	
 	$sierra_sub = $sierra_sub.substring($sierra_index,$sierra_sub.length - $sierra_index);
 	
-	remove-netipaddress -ipaddress $sierra_sub -confirm:$false;
+	if ($sierra_sub -ne $sierra_prime)
+	{
+		remove-netipaddress -ipaddress $sierra_sub -confirm:$false;
+	}
 	
 	$index += 1;
 }
