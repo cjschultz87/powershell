@@ -1,0 +1,189 @@
+$interface = $(read-host -prompt "interface").tolower()
+
+$gateway = $(read-host -prompt "gateway")
+
+$mask = $(read-host -prompt "mask")
+
+$iota = $(netsh interface ipv4 show interfaces).tolower()
+
+$bssid = $(read-host -prompt "bssid")
+
+$index = 3
+
+while ($index -lt $iota.length)
+{	
+	$sierra = $iota[$index];
+	
+	if ($sierra.indexof("$interface") -ge 0)
+	{
+		break;
+	}
+	
+	$index += 1;
+}
+
+if ($index -eq $iota.length)
+{
+	echo "couldn't find interface";
+	
+	exit;
+}
+
+$interfaceIndex = $iota[$index].tostring()
+
+$i_start = 0
+
+while ($i_start -lt $interfaceIndex.length)
+{
+	if ($interfaceIndex[$i_start] -ne " ")
+	{
+		break;
+	}
+	
+	$i_start += 1;
+}
+
+$index = $interfaceIndex.substring($i_start,$interfaceIndex.length - $i_start).indexof(" ")
+
+$interfaceIndex = [int]$interfaceIndex.substring($i_start,$index)
+
+$gatewayAlpha = @(0,0,0,0)
+
+$index = 0
+
+while ($index -lt $gatewayAlpha.length)
+{
+	$stringIndex = $gateway.indexof(".");
+	
+	if ($stringIndex -ge 0)
+	{
+		$gatewayAlpha[$index] = [int]$gateway.substring(0,$stringIndex);
+		
+		$stringIndex += 1;
+	}
+	else
+	{
+		$gatewayAlpha[$index] = [int]$gateway.substring(0,$gateway.length);
+		
+		$stringIndex = 0;
+	}
+	
+	$gateway = $gateway.substring($stringIndex,$gateway.length - $stringIndex);
+	
+	$index += 1;
+}
+
+
+$maskAlpha = @(0,0,0,0)
+
+$index = 0
+
+while ($index -lt $maskAlpha.length)
+{
+	$stringIndex = $mask.indexof(".");
+	
+	if ($stringIndex -ge 0)
+	{
+		$maskAlpha[$index] = [int]$mask.substring(0,$stringIndex);
+		
+		$stringIndex += 1;
+	}
+	else
+	{
+		$maskAlpha[$index] = [int]$mask.substring(0,$mask.length);
+		
+		$stringIndex = 0;
+	}
+	
+	$mask = $mask.substring($stringIndex,$mask.length - $stringIndex);
+	
+	$index += 1;
+}
+
+$ipAlpha = @(0,0,0,0)
+
+$index = 0
+
+while ($index -lt $ipAlpha.length)
+{
+	$iota = $(get-random -minimum 2 -maximum 254);
+	
+	$ipAlpha[$index] = ($maskAlpha[$index] -bxor 255) -band $iota;
+	
+	$ipAlpha[$index] = $ipAlpha[$index] -bxor $gatewayAlpha[$index];
+	
+	$index += 1;
+}
+
+$gateway = $gatewayAlpha[0].tostring() + "." + $gatewayAlpha[1].tostring() + "." + $gatewayAlpha[2].tostring() + "." + $gatewayAlpha[3].toString()
+
+$sierra = $ipAlpha[0].tostring() + "." + $ipAlpha[1].tostring() + "." + $ipAlpha[2].tostring() + "." + $ipAlpha[3].tostring()
+
+echo "setting ipv4 $sierra"
+
+$prefix = 0
+
+$index = 0
+
+while ($index -lt $maskAlpha.length)
+{
+	$prefix_prime = [convert]::tostring($maskAlpha[$index],2);
+	
+	if ($prefix_prime.indexof("0") -lt 0)
+	{
+		$prefix += 8;
+	}
+	else
+	{
+		$prefix += $prefix_prime.indexof("0");
+	}
+	
+	$index += 1;
+}
+
+new-netipaddress -interfaceindex $interfaceIndex -ipaddress $sierra
+
+$sierra_prime = $sierra
+
+set-netipaddress -interfaceindex $interfaceIndex -prefixlength $prefix
+
+netsh advfirewall firewall add rule enable="yes" name="dhcpTemp" dir="out" localport="0-67,69-65535" protocol="tcp" action="block"
+
+netsh advfirewall firewall add rule enable="yes" name="dhcpTemp" dir="out" localport="0-67,69-65535" protocol="udp" action="block"
+
+netsh advfirewall firewall add rule enable="yes" name="dhcpTemp" dir="in" remoteport="0-66,68-65535" protocol="tcp" action="block"
+
+netsh advfirewall firewall add rule enable="yes" name="dhcpTemp" dir="in" remoteport="0-66,68-65535" protocol="udp" action="block"
+
+netsh wlan connect name=$bssid
+
+$sierra = ""
+
+while ($sierra.length -lt 1)
+{
+	$sierra = $(ipconfig | select-string "ipv4")
+}
+
+$index = 0
+
+while ($index -lt $sierra.length)
+{
+	$sierra_sub = $sierra[$index].tostring();
+	
+	$sierra_index = $sierra_sub.indexof(":") + 2;
+	
+	$sierra_sub = $sierra_sub.substring($sierra_index,$sierra_sub.length - $sierra_index);
+	
+	if ($sierra_sub -ne $sierra_prime)
+	{
+		remove-netipaddress -ipaddress $sierra_sub -confirm:$false;
+	}
+	
+	$index += 1;
+}
+
+echo "wi-fi" | powershell -executionpolicy bypass dhcpbat
+
+netsh advfirewall firewall delete rule name="dhcpTemp"
+
+ipconfig
